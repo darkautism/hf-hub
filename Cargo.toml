@@ -37,6 +37,7 @@ ureq = { version = "3", optional = true, features = [
   "socks-proxy",
 ] }
 native-tls = { version = "0.2.12", optional = true }
+unicode-width = "0.2.2"
 
 [target.'cfg(windows)'.dependencies.windows-sys]
 version = "0.61"
