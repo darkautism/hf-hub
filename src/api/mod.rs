@@ -43,7 +43,12 @@ impl Progress for ProgressBar {
             );
         let maxlength = 30;
         let message = if filename.len() > maxlength {
-            format!("..{}", &filename[filename.len() - maxlength..])
+            // Fix CJK filename crash bug
+            let start = filename.char_indices()
+            .map(|(i, _)| i)
+            .find(|&i| filename.len() - i <= maxlength)
+            .unwrap_or(filename.len());        
+            format!("..{}", &filename[start..])
         } else {
             filename.to_string()
         };
