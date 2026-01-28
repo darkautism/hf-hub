@@ -32,6 +32,24 @@ impl Progress for () {
     fn finish(&mut self) {}
 }
 
+fn elide_start_ref(input: &str, max_chars: usize) -> &str {
+    let char_count = input.chars().count();
+    if char_count <= max_chars {
+        return input;
+    }
+
+    // Calculate how many characters to skip from the start
+    let skip_count = char_count - max_chars;
+
+    // Find the byte index where the 'skip_count'-th character starts
+    // char_indices() returns (byte_index, char)
+    if let Some((byte_idx, _)) = input.char_indices().nth(skip_count) {
+        &input[byte_idx..]                
+    } else {    
+        ""    
+    }    
+}
+
 impl Progress for ProgressBar {
     fn init(&mut self, size: usize, filename: &str) {
         self.set_length(size as u64);
@@ -44,11 +62,14 @@ impl Progress for ProgressBar {
         let maxlength = 30;
         let message = if filename.len() > maxlength {
             // Fix CJK filename crash bug
-            let start = filename.char_indices()
-            .map(|(i, _)| i)
-            .find(|&i| filename.len() - i <= maxlength)
-            .unwrap_or(filename.len());        
-            format!("..{}", &filename[start..])
+            let max_chars = 30;
+            let elided = elide_start_ref(filename, max_chars);            
+            // if elided add ".."
+            if elided.len() < filename.len() {
+                format!("..{}", elided)
+            } else {
+                elided.to_string()
+            }
         } else {
             filename.to_string()
         };
